@@ -6,7 +6,6 @@ function define_beanbags()
             name = CONST_COLOR_TABLE[i] .. " Beanbag",
             category = "Decoration",
             tooltip = "A " .. lowercase_color_name .. " beanbag. Perfect for sitting!",
-            shop_key = false,
             shop_buy = 0,
             shop_sell = 0,
             tools = {"hammer1"}
