@@ -14,7 +14,7 @@ function define_wood_stools()
             shop_buy = 0,
             shop_sell = 0,
             tools = {"hammer1"}
-        }, "sprites/stools/ColorStools/" .. lowercase_color_name .. "_stool.png")
+        }, "sprites/stools/colorstools/" .. lowercase_color_name .. "_stool.png")
     end
 end
 
@@ -29,6 +29,6 @@ function define_metal_stools()
             shop_buy = 0,
             shop_sell = 0,
             tools = {"hammer1"}
-        }, "sprites/stools/ColorMetalStools/" .. lowercase_color_name .. "_metalstool.png")
+        }, "sprites/stools/colormetalstools/" .. lowercase_color_name .. "_metalstool.png")
     end
 end
