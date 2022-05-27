@@ -4,7 +4,7 @@ function define_beanbags()
         api_define_object({
             id = lowercase_color_name .. "_beanbag", 
             name = CONST_COLOR_TABLE[i] .. " Beanbag",
-            category = "Decoration",
+            category = "Furniture",
             tooltip = "A " .. lowercase_color_name .. " beanbag. Perfect for sitting!",
             shop_buy = 0,
             shop_sell = 0,
