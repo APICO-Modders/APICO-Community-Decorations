@@ -9,7 +9,7 @@ function define_wood_stools()
         api_define_object({
             id = lowercase_color_name .. "_stool", 
             name = CONST_COLOR_TABLE[i] .. " Stool",
-            category = "Decoration",
+            category = "Furniture",
             tooltip = "A " .. lowercase_color_name .. " stool. Don't stand on it!",
             shop_buy = 0,
             shop_sell = 0,
@@ -24,7 +24,7 @@ function define_metal_stools()
         api_define_object({
             id = lowercase_color_name .. "_metalstool", 
             name = CONST_COLOR_TABLE[i] .. " Metal Stool",
-            category = "Decoration",
+            category = "Furniture",
             tooltip = "A " .. lowercase_color_name .. " metal stool. Sturdier than a wood one!",
             shop_buy = 0,
             shop_sell = 0,
