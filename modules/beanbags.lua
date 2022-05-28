@@ -1,4 +1,5 @@
 function define_beanbags()
+    
     for i=1,#CONST_COLOR_TABLE do
         lowercase_color_name = string.lower(CONST_COLOR_TABLE[i])
         api_define_object({
@@ -11,4 +12,5 @@ function define_beanbags()
             tools = {"hammer1"}
         }, "sprites/beanbags/" .. lowercase_color_name .. "_beanbag.png")
     end
+    dw_define_recipe({{"stone", 4}}, MOD_NAME .. "_white_beanbag", 1)
 end
