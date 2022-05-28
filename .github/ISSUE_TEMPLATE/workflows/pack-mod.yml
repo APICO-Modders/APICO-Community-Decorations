@@ -2,19 +2,25 @@ name: Pack Mod
 on:
   push:
     branches: [main]
+
+  workflow_dispatch:
+
 jobs:
   pack:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
+      
       - name: Switch to the workspace
         run: cd ${{ github.workspace }}
-      - name: Zip up the mod
+      
+      - name: Pack the mod
         run: zip community_decorations.zip * */* */*/* -x *.sh
+
       - name: Create artifact
         uses: actions/upload-artifact@v3
         with:
-          name: community-decorations
+          name: community_decorations
           path: ${{ github.workspace }}/community_decorations.zip
-
