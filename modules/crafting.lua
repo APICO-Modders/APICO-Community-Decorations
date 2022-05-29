@@ -3,6 +3,7 @@ RECIPE_SLOT_AMOUNT = 5
 SLOT_SPR = -1
 RECIPE_SPR = -1
 ARROW_SPR = -1
+PLUS_SPR = -1
 TAB_1_SPR = -1
 TAB_1_SELECTED_SPR = -1
 TAB_2_SPR = -1
@@ -12,15 +13,16 @@ CANT_CRAFT_SPR = -1
 SPR_REF = {}
 
 function prep_deco_workbench()
-	SLOT_SPR = api_define_sprite("workbench_item_slot", "sprites/crafting/dw_item_slot.png", 2)
-	RECIPE_SPR = api_define_sprite("workbench_recipe_slot", "sprites/crafting/dw_recipe_slot.png", 1)
-	ARROW_SPR = api_define_sprite("workbench_arrow", "sprites/crafting/dw_arrow.png", 1)
-	CAN_CRAFT_SPR = api_define_sprite("workbench_craft", "sprites/crafting/dw_craft.png", 2)
-	CANT_CRAFT_SPR = api_define_sprite("workbench_craft_error", "sprites//crafting/dw_craft_error.png", 2)
-	TAB_1_SPR = api_define_sprite("workbench_tab_1", "sprites/crafting/dw_tab_1.png", 2)
-	TAB_1_SELECTED_SPR = api_define_sprite("workbench_tab_1_s", "sprites/crafting/dw_tab_1_selected.png", 2)
-	TAB_2_SPR = api_define_sprite("workbench_tab_2", "sprites/crafting/dw_tab_2.png", 2)
-	TAB_2_SELECTED_SPR = api_define_sprite("workbench_tab_2_s", "sprites/crafting/dw_tab_2_selected.png", 2)
+	SLOT_SPR = api_define_sprite("dw_item_slot", "sprites/crafting/dw_item_slot.png", 2)
+	RECIPE_SPR = api_define_sprite("dw_recipe_slot", "sprites/crafting/dw_recipe_slot.png", 1)
+	ARROW_SPR = api_define_sprite("dw_arrow", "sprites/crafting/dw_arrow.png", 1)
+	PLUS_SPR = api_define_sprite("dw_plus", "sprites/crafting/dw_plus.png", 1)
+	CAN_CRAFT_SPR = api_define_sprite("dw_craft", "sprites/crafting/dw_craft.png", 2)
+	CANT_CRAFT_SPR = api_define_sprite("dw_craft_error", "sprites/crafting/dw_craft_error.png", 2)
+	TAB_1_SPR = api_define_sprite("dw_tab_1", "sprites/crafting/dw_tab_1.png", 2)
+	TAB_1_SELECTED_SPR = api_define_sprite("dw_tab_1_s", "sprites/crafting/dw_tab_1_selected.png", 2)
+	TAB_2_SPR = api_define_sprite("dw_tab_2", "sprites/crafting/dw_tab_2.png", 2)
+	TAB_2_SELECTED_SPR = api_define_sprite("dw_tab_2_s", "sprites/crafting/dw_tab_2_selected.png", 2)
 end
 
 function define_deco_workbench()
@@ -41,9 +43,8 @@ function define_deco_workbench()
     }, "sprites/crafting/decoration_workbench.png", "sprites/crafting/decoration_workbench_gui.png", {
         define = "deco_workbench_define",
 		draw = "deco_workbench_draw",
-		--tick = "deco_workbench_tick"
+		tick = "deco_workbench_tick"
     }, nil)
-	api_log("spr_ref", SPR_REF)
 end
 
 function deco_workbench_define(menu_id)
@@ -61,11 +62,11 @@ function deco_workbench_define(menu_id)
 	api_define_button(menu_id, "tab2", 27, 16, "tab2", "dw_tab_click", "sprites/crafting/dw_tab_2.png")
 	for i=1,5 do
 		api_define_button(menu_id, "recipe" .. i, 8 + 21 * (i - 1), 30, "", "dw_recipe_click", "sprites/crafting/dw_slot.png")
-		api_log("button", i)
 	end
 	for i=1,#DECO_WORKBENCH_RECIPES do
 		api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[i][2][1])
 	end
+	api_define_button(menu_id, "craft_button", 182, 92, "Craft!", "dw_craft_click", "sprites/crafting/dw_craft.png")
 end
 
 function deco_workbench_draw(menu_id)
@@ -78,35 +79,80 @@ function deco_workbench_draw(menu_id)
 		api_draw_button(recipe, false)
 		api_draw_sprite(SPR_REF[recipe_oid], 0, api_gp(recipe, "x") - cam["x"], api_gp(recipe, "y") - cam["y"])
 	end
-
+	
 	if api_gp(menu_id, "selected_item") ~= nil then
-		ingredient1 = api_gp(menu_id, "ingredient1")
-		ingredient2 = api_gp(menu_id, "ingredient2")
-		ingredient3 = api_gp(menu_id, "ingredient3")
-		--recipe_length = #api_gp(menu_id, "selected_recipe")[1]
-		recipe_length = 1
+		recipe = api_gp(menu_id, "selected_recipe")
+		recipe_length = #recipe[1]
+		ingredient1 = recipe[1][1][1]
+		ingredient2 = nil
+		ingredient3 = nil
+		output = recipe[2][1]
 		offset = 0
+		ox = api_gp(menu_id, "x") - cam["x"]
+		oy = api_gp(menu_id, "y") - cam["y"]
 		if recipe_length == 1 then
 			-- draw middle sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient1], 0, api_gp(menu_id, "x") - cam["x"] + 160, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient1], 0, ox + 160, oy + 22)
 		elseif recipe_length == 2 then
+			ingredient2 = recipe[1][2][1]
 			-- draw the left sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158 - 19, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient1], 0, api_gp(menu_id, "x") - cam["x"] + 160 - 19, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158 - 19, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient1], 0, ox + 160 - 19, oy + 22)
 			-- draw the right sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158 + 19, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient2], 0, api_gp(menu_id, "x") - cam["x"] + 160 + 19, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158 + 19, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient2], 0, ox + 160 + 19, oy + 22)
+
+			-- draw the plus
+			api_draw_sprite(PLUS_SPR, 0, ox + 166, oy + 28)
 		else
+			ingredient2 = recipe[1][2][1]
+			ingredient3 = recipe[1][3][1]
 			-- draw the left sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158 - 39, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient1], 0, api_gp(menu_id, "x") - cam["x"] + 160 - 39, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158 - 39, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient1], 0, ox + 160 - 39, oy + 22)
 			-- draw middle sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient2], 0, api_gp(menu_id, "x") - cam["x"] + 160, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient2], 0, ox + 160, oy + 22)
 			-- draw the right sprite
-			api_draw_sprite(SLOT_SPR, 0, api_gp(menu_id, "x") - cam["x"] + 158 + 39, api_gp(menu_id, "y") - cam["y"] + 20)
-			api_draw_sprite(SPR_REF[ingredient3], 0, api_gp(menu_id, "x") - cam["x"] + 160 + 39, api_gp(menu_id, "y") - cam["y"] + 22)
+			api_draw_sprite(SLOT_SPR, 0, ox + 158 + 39, oy + 20)
+			api_draw_sprite(SPR_REF[ingredient3], 0, ox + 160 + 39, oy + 22)
+
+			-- draw the pluses
+			api_draw_sprite(PLUS_SPR, 0, ox + 146, oy + 28)
+			api_draw_sprite(PLUS_SPR, 0, ox + 185, oy + 28)
+		end
+		-- draw arrow
+		api_draw_sprite(ARROW_SPR, 0, ox + 166, oy + 44)
+		-- draw recipe output
+		api_draw_sprite(SLOT_SPR, 1, ox + 158, oy + 57)
+		api_draw_sprite(SPR_REF[output], 0, ox + 160, oy + 59)
+
+		-- draw craft button
+		api_draw_button(api_gp(menu_id, "craft_button"), true)
+	end
+end
+
+function deco_workbench_tick(menu_id)
+	if api_gp(menu_id, "open") == true then
+		recipe = api_gp(menu_id, "selected_recipe")
+		recipe_length = #recipe[1]
+		if recipe ~= nil then
+			can_craft = api_use_total(recipe[1][1][1]) >= recipe[1][1][2]
+			if recipe_length >= 2 then
+				can_craft = can_craft and api_use_total(recipe[1][2][1]) >= recipe[1][2][2]
+			end
+			if recipe_length >= 3 then
+				can_craft = can_craft and api_use_total(recipe[1][3][1]) >= recipe[1][3][2]
+			end
+
+			if can_craft then
+				api_sp(menu_id, "invalid", false)
+				api_sp(api_gp(menu_id, "craft_button"), "sprite_index", CAN_CRAFT_SPR)
+			else
+				api_sp(menu_id, "invalid", true)
+				api_sp(api_gp(menu_id, "craft_button"), "sprite_index", CANT_CRAFT_SPR)
+			end
 		end
 	end
 end
@@ -119,12 +165,33 @@ function dw_define_recipe(input_table, output, num)
 	SPR_REF[output] = api_get_sprite("sp_" .. output)
 end
 
+function dw_craft_click(menu_id)
+	can_craft = api_use_total(recipe[1][1][1]) >= recipe[1][1][2]
+	if recipe_length >= 2 then
+		can_craft = can_craft and api_use_total(recipe[1][2][1]) >= recipe[1][2][2]
+	end
+	if recipe_length >= 3 then
+		can_craft = can_craft and api_use_total(recipe[1][3][1]) >= recipe[1][3][2]
+	end
+	if can_craft then
+		api_use_item(recipe[1][1][1], recipe[1][1][2])
+		if recipe_length >= 2 then
+			api_use_item(recipe[1][2][1], recipe[1][2][2])
+		end
+		if recipe_length >= 3 then
+			api_use_item(recipe[1][3][1], recipe[1][3][2])
+		end
+		api_give_item(recipe[2][1], recipe[2][2])
+	end
+	
+end
+
 function dw_recipe_click(menu_id)
-	api_log("button", "click !")
+	
 end
 
 function dw_tab_click(menu_id)
-	api_log(menu_id)
+
 end
 
 function add_tables(t1,t2)
@@ -144,6 +211,5 @@ function get_sprites_in_recipes(inp)
 	else
 		return {inp}
 	end
-	api_log("sprites", sprites)
 	return sprites
 end

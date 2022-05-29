@@ -1,6 +1,8 @@
 function define_stools()
     define_wood_stools()
     define_metal_stools()
+    dw_define_recipe({{"log", 10}, {"stone", 5}}, "community_decorations_white_stool", 1)
+    dw_define_recipe({{"log", 5}, {"log", 2}, {"stone", 10}}, "community_decorations_white_metalstool", 1)
 end
 
 function define_wood_stools()
