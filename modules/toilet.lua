@@ -20,22 +20,14 @@ function define_toilet()
         tools = {"mouse1", "hammer1"},
         placeable = true
         }, "sprites/toilet/toilet.png", "sprites/toilet/toilet_gui.png", {
-            define = "define_flush_button",
+            define = "define_toilet",
             draw = "draw_toilet_gui"
         })
 end
 
-function define_flush_button(menu_id)
+function define_toilet(menu_id)
     --api_dp(menu_id, "flush_button_sprite", api_define_sprite("flush_button", "sprites/toilet/flush_button.png"))
-    api_define_button(
-        menu_id,
-        "flush_button",
-        5,
-        60,
-        "Flush!",
-        "flush_toilet",
-        "sprites/toilet/flush_button.png"
-    )
+    api_define_button(menu_id, "flush_button", 5, 60, "Flush!", "flush_toilet", "sprites/toilet/flush_button.png")
 end
 
 function flush_toilet(menu_id)
@@ -45,5 +37,5 @@ function flush_toilet(menu_id)
 end
 
 function draw_toilet_gui(menu_id)
-    api_draw_button(api_gp(menu_id, "flush_button"))
+    api_draw_button(api_gp(menu_id, "flush_button"), true)
 end
