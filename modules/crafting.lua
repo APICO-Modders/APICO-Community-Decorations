@@ -12,6 +12,21 @@ CAN_CRAFT_SPR = -1
 CANT_CRAFT_SPR = -1
 SPR_REF = {}
 
+-- defines recipes (used by other scripts)
+--[[
+TEMPLATE :
+
+dw_define_recipe({{"item1", 1}, {"item2", 3}}, "output_item", 3)
+
+]]--
+function dw_define_recipe(input_table, output, num)
+	table.insert(DECO_WORKBENCH_RECIPES, {input_table, {output, num}})
+	for i=1,#input_table do
+		SPR_REF[input_table[i][1]] = api_get_sprite("sp_" .. input_table[i][1])
+	end
+	SPR_REF[output] = api_get_sprite("sp_" .. output)
+end
+
 function prep_deco_workbench()
 	SLOT_SPR = api_define_sprite("dw_item_slot", "sprites/crafting/dw_item_slot.png", 2)
 	RECIPE_SPR = api_define_sprite("dw_recipe_slot", "sprites/crafting/dw_recipe_slot.png", 1)
@@ -56,6 +71,7 @@ function deco_workbench_define(menu_id)
 	api_dp(menu_id, "ingredient1_amount", 2)
 	api_dp(menu_id, "ingredient2", nil)
 	api_dp(menu_id, "ingredient3", nil)
+	api_dp(menu_id, "craft_amount", 1)
 
 	-- tabs
 	api_define_button(menu_id, "tab1", 6, 16, "tab1", "dw_tab_click", "sprites/crafting/dw_tab_1_selected.png")
@@ -66,13 +82,22 @@ function deco_workbench_define(menu_id)
 	for i=1,#DECO_WORKBENCH_RECIPES do
 		api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[i][2][1])
 	end
+	api_define_button(menu_id, "decrease_results", 113, 92, "decrease_results", "dw_decrease_results", "sprites/crafting/dw_result_minus.png")
+	api_define_button(menu_id, "increase_results", 164, 92, "increase_results", "dw_increase_results", "sprites/crafting/dw_result_plus.png")
 	api_define_button(menu_id, "craft_button", 182, 92, "Craft!", "dw_craft_click", "sprites/crafting/dw_craft.png")
+	api_define_button(menu_id, "craft_amount_display", 131, 92, "1", "dw_do_nothing", "sprites/crafting/dw_craft_amount.png")
 end
 
 function deco_workbench_draw(menu_id)
 	cam = api_get_cam()
 	api_draw_button(api_gp(menu_id, "tab1"), false)
 	api_draw_button(api_gp(menu_id, "tab2"), false)
+	api_draw_button(api_gp(menu_id, "decrease_results"), false)
+	api_draw_button(api_gp(menu_id, "increase_results"), false)
+	api_draw_button(api_gp(menu_id, "craft_amount_display"), true)
+	api_log("camt", "draw !")
+
+	-- the rest of this function draws the sprites to choose recipes
 	for i=1,#DECO_WORKBENCH_RECIPES do
 		recipe = api_gp(menu_id, "recipe" .. i)
 		recipe_oid = api_gp(recipe, "text")
@@ -137,15 +162,22 @@ function deco_workbench_tick(menu_id)
 	if api_gp(menu_id, "open") == true then
 		recipe = api_gp(menu_id, "selected_recipe")
 		recipe_length = #recipe[1]
+		recipe_multi = api_gp(menu_id, "craft_amount")
+		recipe[1][1][2] = recipe[1][1][2] * recipe_multi
+		recipe[2][2] = recipe[2][2] * recipe_multi
+		-- check that the player + other menus have enough items
 		if recipe ~= nil then
 			can_craft = api_use_total(recipe[1][1][1]) >= recipe[1][1][2]
 			if recipe_length >= 2 then
+				recipe[1][2][2] = recipe[1][2][2] * recipe_multi
 				can_craft = can_craft and api_use_total(recipe[1][2][1]) >= recipe[1][2][2]
 			end
 			if recipe_length >= 3 then
+				recipe[1][3][2] = recipe[1][3][2] * recipe_multi
 				can_craft = can_craft and api_use_total(recipe[1][3][1]) >= recipe[1][3][2]
 			end
 
+			-- set the crafting button to the proper sprite
 			if can_craft then
 				api_sp(menu_id, "invalid", false)
 				api_sp(api_gp(menu_id, "craft_button"), "sprite_index", CAN_CRAFT_SPR)
@@ -157,15 +189,9 @@ function deco_workbench_tick(menu_id)
 	end
 end
 
-function dw_define_recipe(input_table, output, num)
-	table.insert(DECO_WORKBENCH_RECIPES, {input_table, {output, num}})
-	for i=1,#input_table do
-		SPR_REF[input_table[i][1]] = api_get_sprite("sp_" .. input_table[i][1])
-	end
-	SPR_REF[output] = api_get_sprite("sp_" .. output)
-end
-
+-- actually crafts the item
 function dw_craft_click(menu_id)
+	-- double check that the player has the proper items
 	can_craft = api_use_total(recipe[1][1][1]) >= recipe[1][1][2]
 	if recipe_length >= 2 then
 		can_craft = can_craft and api_use_total(recipe[1][2][1]) >= recipe[1][2][2]
@@ -194,6 +220,25 @@ function dw_tab_click(menu_id)
 
 end
 
+function dw_increase_results(menu_id)
+	amt = api_gp(menu_id, "craft_amount")
+	api_sp(menu_id, "craft_amount", amt + 1)
+	update_amount_display(menu_id, amt + 1)
+end
+
+function dw_decrease_results(menu_id)
+	amt = api_gp(menu_id, "craft_amount")
+	if amt > 1 then
+		api_sp(menu_id, "craft_amount", amt - 1)
+		update_amount_display(menu_id, amt -1)
+	end
+end
+
+function update_amount_display(menu_id, amt)
+	api_log("amt", amt)
+	api_sp(api_gp(menu_id, "craft_amount_display"), "text", amt)
+end
+
 function add_tables(t1,t2)
     for i=1,#t2 do
         t1[#t1+1] = t2[i]
@@ -212,4 +257,11 @@ function get_sprites_in_recipes(inp)
 		return {inp}
 	end
 	return sprites
+end
+
+function dw_do_nothing(menu_id)
+	-- hello !
+	-- if you've made it this far, good job, and i apologize for my code
+	-- good luck !
+	-- this function does nothing
 end
