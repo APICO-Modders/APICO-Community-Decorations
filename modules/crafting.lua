@@ -5,10 +5,8 @@ SLOT_SPR = -1
 RECIPE_SPR = -1
 ARROW_SPR = -1
 PLUS_SPR = -1
-TAB_1_SPR = -1
-TAB_1_SELECTED_SPR = -1
-TAB_2_SPR = -1
-TAB_2_SELECTED_SPR = -1
+TABS_SPR = {}
+TABS_SELECTED_SPR = {}
 CAN_CRAFT_SPR = -1
 CANT_CRAFT_SPR = -1
 WHITE_NUMBERS_SPR = -1
@@ -22,13 +20,19 @@ TEMPLATE :
 dw_define_recipe({{"item1", 1}, {"item2", 3}}, "output_item", 3)
 
 ]]--
-function dw_define_recipe(input_table, output, num)
-	table.insert(DECO_WORKBENCH_RECIPES, {input_table, {output, num}})
-	DECO_WORKBENCH_RECIPE_INDEX[output] = #DECO_WORKBENCH_RECIPES
+function dw_define_recipe(input_table, output, num, tab)
+	--DECO_WORKBENCH_RECIPES[tab][#DECO_WORKBENCH_RECIPES[tab]+1] = {input_table, {output, num}}
+	table.insert(DECO_WORKBENCH_RECIPES[tab], {input_table, {output, num}})
+	DECO_WORKBENCH_RECIPE_INDEX[tab][output] = #DECO_WORKBENCH_RECIPES[tab]
 	for i=1,#input_table do
 		SPR_REF[input_table[i][1]] = api_get_sprite("sp_" .. input_table[i][1])
 	end
 	SPR_REF[output] = api_get_sprite("sp_" .. output)
+end
+
+function dw_define_tab()
+	table.insert(DECO_WORKBENCH_RECIPES, {})
+	table.insert(DECO_WORKBENCH_RECIPE_INDEX, {})
 end
 
 function prep_deco_workbench()
@@ -38,10 +42,10 @@ function prep_deco_workbench()
 	PLUS_SPR = api_define_sprite("dw_plus", "sprites/crafting/dw_plus.png", 1)
 	CAN_CRAFT_SPR = api_define_sprite("dw_craft", "sprites/crafting/dw_craft.png", 2)
 	CANT_CRAFT_SPR = api_define_sprite("dw_craft_error", "sprites/crafting/dw_craft_error.png", 2)
-	TAB_1_SPR = api_define_sprite("dw_tab_1", "sprites/crafting/dw_tab_1.png", 2)
-	TAB_1_SELECTED_SPR = api_define_sprite("dw_tab_1_s", "sprites/crafting/dw_tab_1_selected.png", 2)
-	TAB_2_SPR = api_define_sprite("dw_tab_2", "sprites/crafting/dw_tab_2.png", 2)
-	TAB_2_SELECTED_SPR = api_define_sprite("dw_tab_2_s", "sprites/crafting/dw_tab_2_selected.png", 2)
+	TABS_SPR[1] = api_define_sprite("dw_tab_1", "sprites/crafting/dw_tab_1.png", 2)
+	TABS_SELECTED_SPR[1] = api_define_sprite("dw_tab_1_s", "sprites/crafting/dw_tab_1_selected.png", 2)
+	TABS_SPR[2] = api_define_sprite("dw_tab_2", "sprites/crafting/dw_tab_2.png", 2)
+	TABS_SELECTED_SPR[2] = api_define_sprite("dw_tab_2_s", "sprites/crafting/dw_tab_2_selected.png", 2)
 	WHITE_NUMBERS_SPR = api_define_sprite("white_numbers_sprite", "sprites/crafting/white_numbers.png", 13)
 	RED_NUMBERS_SPR = api_define_sprite("red_numbers_sprite", "sprites/crafting/red_numbers.png", 13)
 end
@@ -69,25 +73,28 @@ function define_deco_workbench()
 end
 
 function deco_workbench_define(menu_id)
-	api_dp(menu_id, "tab", "tab1")
-	api_dp(menu_id, "selected_item", "community_decorations_white_stool")
-	api_dp(menu_id, "selected_recipe", DECO_WORKBENCH_RECIPES[2])
+	api_dp(menu_id, "tab", 1)
+	api_dp(menu_id, "selected_item", nil)
+	api_dp(menu_id, "selected_recipe", nil)
 	api_dp(menu_id, "invalid", false)
-	api_dp(menu_id, "ingredient1", "log")
-	api_dp(menu_id, "ingredient1_amount", 2)
+	api_dp(menu_id, "ingredient1", nil)
+	api_dp(menu_id, "ingredient1_amount", nil)
 	api_dp(menu_id, "ingredient2", nil)
 	api_dp(menu_id, "ingredient3", nil)
 	api_dp(menu_id, "craft_amount", 1)
 
 	-- tabs
-	api_define_button(menu_id, "tab1", 6, 16, "tab1", "dw_tab_click", "sprites/crafting/dw_tab_1_selected.png")
-	api_define_button(menu_id, "tab2", 27, 16, "tab2", "dw_tab_click", "sprites/crafting/dw_tab_2.png")
-	for i=1,5 do
+	api_define_button(menu_id, "tab1", 6, 16, "1", "dw_tab_click", "sprites/crafting/dw_tab_1_selected.png")
+	api_define_button(menu_id, "tab2", 27, 16, "2", "dw_tab_click", "sprites/crafting/dw_tab_2.png")
+	for i=1,10 do
 		api_define_button(menu_id, "recipe" .. i, 8 + 21 * (i - 1), 30, "", "dw_recipe_click", "sprites/crafting/dw_slot.png")
 	end
-	for i=1,#DECO_WORKBENCH_RECIPES do
-		api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[i][2][1])
+	api_log("dw", "defining tab 1 recipes ...")
+	tab = api_gp(menu_id, "tab")
+	for i=1,#DECO_WORKBENCH_RECIPES[tab] do
+		api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[tab][i][2][1])
 	end
+	api_log("dw", "defining other buttons ...")
 	api_define_button(menu_id, "decrease_results", 113, 92, "decrease_results", "dw_decrease_results", "sprites/crafting/dw_result_minus.png")
 	api_define_button(menu_id, "increase_results", 164, 92, "increase_results", "dw_increase_results", "sprites/crafting/dw_result_plus.png")
 	api_define_button(menu_id, "craft_button", 182, 92, "Craft!", "dw_craft_click", "sprites/crafting/dw_craft.png")
@@ -96,20 +103,25 @@ end
 
 function deco_workbench_draw(menu_id)
 	cam = api_get_cam()
+	--api_log("dw", "drawing tabs ...")
 	api_draw_button(api_gp(menu_id, "tab1"), false)
 	api_draw_button(api_gp(menu_id, "tab2"), false)
+	--api_log("dw", "drawing other buttons ...")
 	api_draw_button(api_gp(menu_id, "decrease_results"), false)
 	api_draw_button(api_gp(menu_id, "increase_results"), false)
 	api_draw_button(api_gp(menu_id, "craft_amount_display"), true)
-
 	-- the rest of this function draws the sprites to choose recipes
-	for i=1,#DECO_WORKBENCH_RECIPES do
+	--api_log("dw", "finding tab ...")
+	tab = api_gp(menu_id, "tab")
+	--api_log("dw", "drawing recipes ...")
+	for i=1,#DECO_WORKBENCH_RECIPES[tab] do
 		recipe = api_gp(menu_id, "recipe" .. i)
 		recipe_oid = api_gp(recipe, "text")
 		api_draw_button(recipe, false)
 		api_draw_sprite(SPR_REF[recipe_oid], 0, api_gp(recipe, "x") - cam["x"], api_gp(recipe, "y") - cam["y"])
 	end
 	
+	--api_log("dw", "drawing selected recipe ...")
 	if api_gp(menu_id, "selected_item") ~= nil then
 		recipe = api_gp(menu_id, "selected_recipe")
 		recipe_length = #recipe[1]
@@ -248,13 +260,28 @@ end
 
 function dw_recipe_click(menu_id)
 	button_id = api_get_highlighted("ui")
+	tab = api_gp(menu_id, "tab")
+	api_log("recipe_click", DECO_WORKBENCH_RECIPE_INDEX[tab][api_gp(button_id, "text")])
 	api_sp(menu_id, "selected_item", api_gp(button_id, "text"))
-	api_sp(menu_id, "selected_recipe", DECO_WORKBENCH_RECIPES[DECO_WORKBENCH_RECIPE_INDEX[api_gp(button_id, "text")]])
+	api_sp(menu_id, "selected_recipe", DECO_WORKBENCH_RECIPES[tab][DECO_WORKBENCH_RECIPE_INDEX[tab][api_gp(button_id, "text")]])
 
 end
 
 function dw_tab_click(menu_id)
-
+	button_id = api_get_highlighted("ui")
+	tab = tonumber(api_gp(button_id, "text"))
+	api_sp(menu_id, "tab", tab)
+	for i=1,10 do
+		if i <= #DECO_WORKBENCH_RECIPES[tab] then
+			api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[tab][i][2][1])
+		else
+			api_sp(api_gp(menu_id, "recipe" .. i), "text", "")
+		end
+	end
+	for i=1, #DECO_WORKBENCH_RECIPES do
+		api_sp(api_gp(menu_id, "tab" .. i), "sprite_index", TABS_SPR[i])
+	end
+	api_sp(api_gp(menu_id, "tab" .. tab), "sprite_index", TABS_SELECTED_SPR[tab])
 end
 
 function dw_increase_results(menu_id)
@@ -275,26 +302,6 @@ function update_amount_display(menu_id, amt)
 	api_sp(api_gp(menu_id, "craft_amount_display"), "text", amt)
 end
 
-function add_tables(t1,t2)
-    for i=1,#t2 do
-        t1[#t1+1] = t2[i]
-    end
-    return t1
-end
-
-function get_sprites_in_recipes(inp)
-	sprites = {}
-	
-	if type(inp) == "table" then
-		for i=1,#inp do
-			sprites = add_tables(sprites, fn_for_tbl(inp[i]))
-		end
-	else
-		return {inp}
-	end
-	return sprites
-end
-
 function draw_numbers(x, y, n1, n2, color, justify)
 	justify = "CENTER" or justify
 	offset = 4
@@ -310,7 +317,6 @@ function draw_numbers(x, y, n1, n2, color, justify)
 	else
 		numbers = RED_NUMBERS_SPR
 	end
-	-- draw n1 (limited to three chars)
 	for i=1, #n1 - 2 do
 		api_draw_sprite(numbers, tonumber(string.sub(n1, i, i)), x + drawn * offset + start, y)
 		drawn = drawn + 1

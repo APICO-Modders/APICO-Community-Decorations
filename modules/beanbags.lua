@@ -12,5 +12,4 @@ function define_beanbags()
             tools = {"hammer1"}
         }, "sprites/beanbags/" .. lowercase_color_name .. "_beanbag.png")
     end
-    dw_define_recipe({{"stone", 4}}, MOD_NAME .. "_white_beanbag", 1)
 end
