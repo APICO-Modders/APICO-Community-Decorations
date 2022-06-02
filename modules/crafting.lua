@@ -295,13 +295,6 @@ function get_sprites_in_recipes(inp)
 	return sprites
 end
 
-function dw_do_nothing(menu_id)
-	-- hello !
-	-- if you've made it this far, good job, and i apologize for my code
-	-- good luck !
-	-- this function does nothing
-end
-
 function draw_numbers(x, y, n1, n2, color, justify)
 	justify = "CENTER" or justify
 	offset = 4
@@ -350,4 +343,11 @@ function draw_number(x, y, n1, color, justify)
 		api_draw_sprite(numbers, tonumber(string.sub(n1, i, i)), x + drawn * offset + start, y)
 		drawn = drawn + 1
 	end
+end
+
+function dw_do_nothing(menu_id)
+	-- hello !
+	-- if you've made it this far, good job, and i apologize for my code
+	-- good luck !
+	-- this function does nothing
 end
