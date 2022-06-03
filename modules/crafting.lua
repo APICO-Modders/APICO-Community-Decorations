@@ -120,7 +120,6 @@ function deco_workbench_draw(menu_id)
 		api_draw_button(recipe, false)
 		api_draw_sprite(SPR_REF[recipe_oid], 0, api_gp(recipe, "x") - cam["x"], api_gp(recipe, "y") - cam["y"])
 	end
-	
 	--api_log("dw", "drawing selected recipe ...")
 	if api_gp(menu_id, "selected_item") ~= nil then
 		recipe = api_gp(menu_id, "selected_recipe")
@@ -132,66 +131,71 @@ function deco_workbench_draw(menu_id)
 		offset = 0
 		ox = api_gp(menu_id, "x") - cam["x"]
 		oy = api_gp(menu_id, "y") - cam["y"]
-		inv_amts = check_inventory(menu_id)
-		can_craft_slots = inv_amts[2]
-		inv_amts = inv_amts[1]
 		amt = api_gp(menu_id, "craft_amount")
-		can_craft_color = {}
-		for i=1,#can_craft_slots do
-			if can_craft_slots[i] == false then
-				can_craft_color[i] = "RED"
-			elseif can_craft_slots[i] == true then
-				can_craft_color[i] = "WHITE"
-			end
-		end
-		if recipe_length == 1 then
-			-- draw middle sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160, oy + 22)
-			draw_numbers(ox + 158, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
-		elseif recipe_length == 2 then
-			ingredient2 = recipe[1][2]
-			-- draw the left sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158 - 19, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160 - 19, oy + 22)
-			draw_numbers(ox + 158 - 19, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
-			-- draw the right sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158 + 19, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient2[1]], 0, ox + 160 + 19, oy + 22)
-			draw_numbers(ox + 158 + 19, oy + 37, tostring(inv_amts[2]), tostring(ingredient2[2]), can_craft_color[2])
-
-			-- draw the plus
-			api_draw_sprite(PLUS_SPR, 0, ox + 166, oy + 28)
-		else
-			ingredient2 = recipe[1][2]
-			ingredient3 = recipe[1][3]
-			-- draw the left sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158 - 39, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160 - 39, oy + 22)
-			draw_numbers(ox + 158 - 39, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
-			-- draw middle sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient2[1]], 0, ox + 160, oy + 22)
-			draw_numbers(ox + 158, oy + 37, tostring(inv_amts[2]), tostring(ingredient2[2]), can_craft_color[2])
-			-- draw the right sprite
-			api_draw_sprite(SLOT_SPR, 0, ox + 158 + 39, oy + 20)
-			api_draw_sprite(SPR_REF[ingredient3[1]], 0, ox + 160 + 39, oy + 22)
-			draw_numbers(ox + 158 + 39, oy + 37, tostring(inv_amts[3]), tostring(ingredient3[2]), can_craft_color[3])
-
-			-- draw the pluses
-			api_draw_sprite(PLUS_SPR, 0, ox + 146, oy + 28)
-			api_draw_sprite(PLUS_SPR, 0, ox + 185, oy + 28)
-		end
-		-- draw arrow
-		api_draw_sprite(ARROW_SPR, 0, ox + 166, oy + 44)
-		-- draw recipe output
-		api_draw_sprite(SLOT_SPR, 1, ox + 158, oy + 57)
-		api_draw_sprite(SPR_REF[output], 0, ox + 160, oy + 59)
-		draw_number(ox + 158 + 21, oy + 59 + 15, tostring(amt), "WHITE", "RIGHT")
-
-		-- draw craft button
-		api_draw_button(api_gp(menu_id, "craft_button"), true)
+		draw_recipe(menu_id, ox, oy, amt)
 	end
+end
+
+function draw_recipe(menu_id, ox, oy, amt)
+	inv_amts = check_inventory(menu_id)
+	can_craft_slots = inv_amts[2]
+	inv_amts = inv_amts[1]
+	-- set the colors for numbers (white if craftable, red if not)
+	can_craft_color = {}
+	for i=1,#can_craft_slots do
+		if can_craft_slots[i] == false then
+			can_craft_color[i] = "RED"
+		elseif can_craft_slots[i] == true then
+			can_craft_color[i] = "WHITE"
+		end
+	end
+	if recipe_length == 1 then
+		-- draw middle sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160, oy + 22)
+		draw_numbers(ox + 158, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
+	elseif recipe_length == 2 then
+		ingredient2 = recipe[1][2]
+		-- draw the left sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158 - 19, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160 - 19, oy + 22)
+		draw_numbers(ox + 158 - 19, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
+		-- draw the right sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158 + 19, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient2[1]], 0, ox + 160 + 19, oy + 22)
+		draw_numbers(ox + 158 + 19, oy + 37, tostring(inv_amts[2]), tostring(ingredient2[2]), can_craft_color[2])
+
+		-- draw the plus
+		api_draw_sprite(PLUS_SPR, 0, ox + 166, oy + 28)
+	else
+		ingredient2 = recipe[1][2]
+		ingredient3 = recipe[1][3]
+		-- draw the left sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158 - 39, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient1[1]], 0, ox + 160 - 39, oy + 22)
+		draw_numbers(ox + 158 - 39, oy + 37, tostring(inv_amts[1]), tostring(ingredient1[2] * amt), can_craft_color[1])
+		-- draw middle sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient2[1]], 0, ox + 160, oy + 22)
+		draw_numbers(ox + 158, oy + 37, tostring(inv_amts[2]), tostring(ingredient2[2]), can_craft_color[2])
+		-- draw the right sprite
+		api_draw_sprite(SLOT_SPR, 0, ox + 158 + 39, oy + 20)
+		api_draw_sprite(SPR_REF[ingredient3[1]], 0, ox + 160 + 39, oy + 22)
+		draw_numbers(ox + 158 + 39, oy + 37, tostring(inv_amts[3]), tostring(ingredient3[2]), can_craft_color[3])
+
+		-- draw the pluses
+		api_draw_sprite(PLUS_SPR, 0, ox + 146, oy + 28)
+		api_draw_sprite(PLUS_SPR, 0, ox + 185, oy + 28)
+	end
+	-- draw arrow
+	api_draw_sprite(ARROW_SPR, 0, ox + 166, oy + 44)
+	-- draw recipe output
+	api_draw_sprite(SLOT_SPR, 1, ox + 158, oy + 57)
+	api_draw_sprite(SPR_REF[output], 0, ox + 160, oy + 59)
+	draw_number(ox + 158 + 21, oy + 59 + 15, tostring(amt), "WHITE", "RIGHT")
+
+	-- draw craft button
+	api_draw_button(api_gp(menu_id, "craft_button"), true)
 end
 
 function check_inventory(menu_id)
