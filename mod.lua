@@ -4,7 +4,7 @@ function register()
     return {
         name = MOD_NAME,
         hooks = {},
-        modules = {"cloth_tables", "beanbags", "stools", "constants"}
+        modules = {"cloth_tables", "beanbags", "stools", "constants", "utils"}
     }
 end
 

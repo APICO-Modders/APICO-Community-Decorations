@@ -13,7 +13,9 @@ function define_wood_stools()
             tooltip = "A " .. lowercase_color_name .. " stool. Don't stand on it!",
             shop_buy = 0,
             shop_sell = 0,
-            tools = {"hammer1"}
+            tools = {"hammer1"},
+            depth = -8,
+            bench = true
         }, "sprites/stools/colorstools/" .. lowercase_color_name .. "_stool.png")
     end
 end
@@ -28,7 +30,9 @@ function define_metal_stools()
             tooltip = "A " .. lowercase_color_name .. " metal stool. Sturdier than a wood one!",
             shop_buy = 0,
             shop_sell = 0,
-            tools = {"hammer1"}
+            tools = {"hammer1"},
+            depth = -8,
+            bench = true
         }, "sprites/stools/colormetalstools/" .. lowercase_color_name .. "_metalstool.png")
     end
 end
