@@ -30,9 +30,11 @@ function dw_define_recipe(input_table, output, num, tab)
 	SPR_REF[output] = api_get_sprite("sp_" .. output)
 end
 
-function dw_define_tab()
-	table.insert(DECO_WORKBENCH_RECIPES, {})
-	table.insert(DECO_WORKBENCH_RECIPE_INDEX, {})
+function dw_define_tabs(num)
+	for i=1, num do
+		table.insert(DECO_WORKBENCH_RECIPES, {})
+		table.insert(DECO_WORKBENCH_RECIPE_INDEX, {})
+	end
 end
 
 function prep_deco_workbench()
@@ -42,10 +44,10 @@ function prep_deco_workbench()
 	PLUS_SPR = api_define_sprite("dw_plus", "sprites/crafting/dw_plus.png", 1)
 	CAN_CRAFT_SPR = api_define_sprite("dw_craft", "sprites/crafting/dw_craft.png", 2)
 	CANT_CRAFT_SPR = api_define_sprite("dw_craft_error", "sprites/crafting/dw_craft_error.png", 2)
-	TABS_SPR[1] = api_define_sprite("dw_tab_1", "sprites/crafting/dw_tab_1.png", 2)
-	TABS_SELECTED_SPR[1] = api_define_sprite("dw_tab_1_s", "sprites/crafting/dw_tab_1_selected.png", 2)
-	TABS_SPR[2] = api_define_sprite("dw_tab_2", "sprites/crafting/dw_tab_2.png", 2)
-	TABS_SELECTED_SPR[2] = api_define_sprite("dw_tab_2_s", "sprites/crafting/dw_tab_2_selected.png", 2)
+	for i=1,5 do
+		TABS_SPR[i] = api_define_sprite("dw_tab_" .. i, "sprites/crafting/dw_tab_" .. i .. ".png", 2)
+		TABS_SELECTED_SPR[i] = api_define_sprite("dw_tab_" .. i .. "_s", "sprites/crafting/dw_tab_" .. i .. "_selected.png", 2)
+	end
 	WHITE_NUMBERS_SPR = api_define_sprite("white_numbers_sprite", "sprites/crafting/white_numbers.png", 13)
 	RED_NUMBERS_SPR = api_define_sprite("red_numbers_sprite", "sprites/crafting/red_numbers.png", 13)
 end
@@ -61,7 +63,7 @@ function define_deco_workbench()
         shop_buy = 0,
         shop_sell = 0,
         layout = {},
-        buttons = {"Help", "Target", "Close"},
+        buttons = {"Help", "Close"},
         info = {},
         tools = {"mouse1", "hammer1"},
     	placeable = true
@@ -85,9 +87,11 @@ function deco_workbench_define(menu_id)
 
 	-- tabs
 	api_define_button(menu_id, "tab1", 6, 16, "1", "dw_tab_click", "sprites/crafting/dw_tab_1_selected.png")
-	api_define_button(menu_id, "tab2", 27, 16, "2", "dw_tab_click", "sprites/crafting/dw_tab_2.png")
-	for i=1,10 do
-		api_define_button(menu_id, "recipe" .. i, 8 + 21 * (i - 1), 30, "", "dw_recipe_click", "sprites/crafting/dw_slot.png")
+	for i=2,#DECO_WORKBENCH_RECIPES do
+		api_define_button(menu_id, "tab" .. i, 6 + 21 * (i - 1), 16, tostring(i), "dw_tab_click", "sprites/crafting/dw_tab_" .. i .. ".png")
+	end
+	for i=1,20 do
+		api_define_button(menu_id, "recipe" .. i, 8 + 21 * ((i - 1) % 5), 30 + 21 * ((i - 1) // 5), "", "dw_recipe_click", "sprites/crafting/dw_slot.png")
 	end
 	api_log("dw", "defining tab 1 recipes ...")
 	tab = api_gp(menu_id, "tab")
@@ -104,8 +108,10 @@ end
 function deco_workbench_draw(menu_id)
 	cam = api_get_cam()
 	--api_log("dw", "drawing tabs ...")
-	api_draw_button(api_gp(menu_id, "tab1"), false)
-	api_draw_button(api_gp(menu_id, "tab2"), false)
+	for i=1,#DECO_WORKBENCH_RECIPES do
+		api_draw_button(api_gp(menu_id, "tab" .. i), false)
+		api_draw_button(api_gp(menu_id, "tab" .. i), false)
+	end
 	--api_log("dw", "drawing other buttons ...")
 	api_draw_button(api_gp(menu_id, "decrease_results"), false)
 	api_draw_button(api_gp(menu_id, "increase_results"), false)
@@ -262,30 +268,32 @@ function dw_craft_click(menu_id)
 	
 end
 
-function dw_recipe_click(menu_id)
+function dw_recipe_click(menu_id, button_id)
 	button_id = api_get_highlighted("ui")
-	tab = api_gp(menu_id, "tab")
-	api_log("recipe_click", DECO_WORKBENCH_RECIPE_INDEX[tab][api_gp(button_id, "text")])
-	api_sp(menu_id, "selected_item", api_gp(button_id, "text"))
-	api_sp(menu_id, "selected_recipe", DECO_WORKBENCH_RECIPES[tab][DECO_WORKBENCH_RECIPE_INDEX[tab][api_gp(button_id, "text")]])
-
+	recipe_item = api_gp(button_id, "text")
+	if recipe_item ~= "" then
+		api_sp(menu_id, "selected_item", api_gp(button_id, "text"))
+		api_sp(menu_id, "selected_recipe", DECO_WORKBENCH_RECIPES[tab][DECO_WORKBENCH_RECIPE_INDEX[tab][api_gp(button_id, "text")]])
+	end
 end
 
-function dw_tab_click(menu_id)
-	button_id = api_get_highlighted("ui")
-	tab = tonumber(api_gp(button_id, "text"))
-	api_sp(menu_id, "tab", tab)
-	for i=1,10 do
-		if i <= #DECO_WORKBENCH_RECIPES[tab] then
-			api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[tab][i][2][1])
-		else
-			api_sp(api_gp(menu_id, "recipe" .. i), "text", "")
+function dw_tab_click(menu_id, button_id)
+	tab = api_gp(button_id, "text")
+	if tab ~= "" then
+		tab = tonumber(tab)
+		api_sp(menu_id, "tab", tab)
+		for i=1,10 do
+			if i <= #DECO_WORKBENCH_RECIPES[tab] then
+				api_sp(api_gp(menu_id, "recipe" .. i), "text", DECO_WORKBENCH_RECIPES[tab][i][2][1])
+			else
+				api_sp(api_gp(menu_id, "recipe" .. i), "text", "")
+			end
 		end
+		for i=1, #DECO_WORKBENCH_RECIPES do
+			api_sp(api_gp(menu_id, "tab" .. i), "sprite_index", TABS_SPR[i])
+		end
+		api_sp(api_gp(menu_id, "tab" .. tab), "sprite_index", TABS_SELECTED_SPR[tab])
 	end
-	for i=1, #DECO_WORKBENCH_RECIPES do
-		api_sp(api_gp(menu_id, "tab" .. i), "sprite_index", TABS_SPR[i])
-	end
-	api_sp(api_gp(menu_id, "tab" .. tab), "sprite_index", TABS_SELECTED_SPR[tab])
 end
 
 function dw_increase_results(menu_id)
