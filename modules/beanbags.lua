@@ -8,7 +8,9 @@ function define_beanbags()
             tooltip = "A " .. lowercase_color_name .. " beanbag. Perfect for sitting!",
             shop_buy = 0,
             shop_sell = 0,
-            tools = {"hammer1"}
+            tools = {"hammer1"},
+            depth = -8,
+            bench = true
         }, "sprites/beanbags/" .. lowercase_color_name .. "_beanbag.png")
     end
 end
